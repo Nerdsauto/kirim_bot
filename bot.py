@@ -166,13 +166,15 @@ def get_5(update: Update, context: CallbackContext):
     pay3 = format_summa(context.user_data['pay3'], point_format=True)
     pay4 = format_summa(context.user_data['pay4'], point_format=True)
     pay5 = format_summa(context.user_data['pay5'], point_format=True)
+    probeg = format_summa(c['probeg'], point_format=True)  # probeg ham nuqtali ko‘rinishda
+    narx = format_summa(c['narx'], point_format=True)      # narx ham nuqtali ko‘rinishda
 
     post = (
         f"<b>🚗 #{c['model']}</b>\n"
         f"<b>📆 {c['year']} yil</b>\n"
         f"<b>💎 {c['kraska']}</b>\n"
-        f"<b>🏎 {c['probeg']}km</b>\n"
-        f"<b>💰 {c['narx']}$</b>\n"
+        f"<b>🏎 {probeg}km</b>\n"
+        f"<b>💰 {narx}$</b>\n"
         f"\n"
         f"<b>🏦 Kapital bank</b>\n"
         f"\n"
@@ -187,7 +189,6 @@ def get_5(update: Update, context: CallbackContext):
         f"<b>https://t.me/real_auto_uz</b>"
     )
 
-    # Avval media, keyin text
     if len(photos) == 1:
         update.message.reply_photo(photos[0], caption=post, parse_mode='HTML')
     elif len(photos) > 1:
