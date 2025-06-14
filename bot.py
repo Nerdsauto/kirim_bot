@@ -1,35 +1,47 @@
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
-import logging
-import os, json
+import logging, os, json
 import gspread
 from google.oauth2.service_account import Credentials
 
-# 1. JSON’ni Environment Variable’dan o‘qing
-creds_json = os.environ['GOOGLE_CREDENTIALS']
+# ===== 1. Telegram bot token (to‘g‘ridan yozilgan) =====
+TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # BU YERGA O'Z TOKENINGIZNI JOYLASHTIRING
+
+# ===== 2. Google Credentials JSON as Environment Variable =====
+# Railway yoki GitHub Actions orqali 'GOOGLE_CREDENTIALS' o'zgaruvchisiga butun JSON joylangan bo'lishi kerak
+creds_json = os.environ.get('GOOGLE_CREDENTIALS')
+if not creds_json:
+    logging.error("❌ GOOGLE_CREDENTIALS environment variable topilmadi!")
+    exit(1)
 creds_info = json.loads(creds_json)
 
-# 2. Scopes ni aniqlang
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets",
-          "https://www.googleapis.com/auth/drive"]
-
-# 3. service_account_info orqali credential oling
+# ===== 3. Scopes va credential yaratish =====
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
 creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
 
-# 4. gspread bilan avtorizatsiya
+# ===== 4. gspread bilan avtorizatsiya =====
 client = gspread.authorize(creds)
 sheet = client.open_by_key("12H87uDfhvYDyfuCMEHZJ4WDdcIvHpjn1xp2luvrbLaM").worksheet("realauto")
 
-# ===== 1. Telegram bot token =====
-TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # TOKEN ni bu yerga to‘liq joylang
+# ===== 5. Logging sozlamasi =====
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
-# ===== 3. Logging =====
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
+# ===== 6. Conversation holatlari =====
 CHOOSING_ROW = 1
 
-# ===== 4. /start komandasi =====
+# ===== 7. /start komandasi =====
 def start(update: Update, context: CallbackContext):
+    # webhook bo'lsa o'chirish (polling conflict oldini olish)
+    bot = Bot(token=TOKEN)
+    bot.delete_webhook()
+
     keyboard = [["Post yasash"]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     update.message.reply_text(
@@ -37,29 +49,31 @@ def start(update: Update, context: CallbackContext):
         reply_markup=reply_markup
     )
 
-# ===== 5. Post yasash menyusi =====
+# ===== 8. Post yasash menyusi =====
 def post_yasash(update: Update, context: CallbackContext):
-    update.message.reply_text("📌 Qaysi qatordagi mashinadan post tayyorlaymiz? Raqamni kiriting (masalan: 4)")
+    update.message.reply_text(
+        "📌 Qaysi qatordagi mashinadan post tayyorlaymiz? Raqamni kiriting (masalan: 4)"
+    )
     return CHOOSING_ROW
 
-# ===== 6. Qator raqamiga qarab post yasash =====
+# ===== 9. Qator raqamiga qarab post yasash =====
 def choose_row(update: Update, context: CallbackContext):
     try:
         row_number = int(update.message.text)
         row_data = sheet.row_values(row_number)
 
-        # Ma’lumotlarni to‘g‘ri formatlash
-        model = row_data[1] if len(row_data) > 1 else "NOMA’LUM"
-        year = row_data[2] if len(row_data) > 2 else "NOMA’LUM"
+        # Ustunlar bo'yicha xavfsiz olish
+        model  = row_data[1] if len(row_data) > 1 else "NOMA’LUM"
+        year   = row_data[2] if len(row_data) > 2 else "NOMA’LUM"
         kraska = row_data[3] if len(row_data) > 3 else "NOMA’LUM"
         probeg = row_data[4] if len(row_data) > 4 else "NOMA’LUM"
-        narx = row_data[5] if len(row_data) > 5 else "NOMA’LUM"
+        narx   = row_data[5] if len(row_data) > 5 else "NOMA’LUM"
 
         post = f"""🚗 #{model}
 📆 {year} yil
 💎 {kraska}
-🏎 {probeg}
-💰 {narx}
+🏎 {probeg} km
+💰 {narx}$
 
 Kapital bank
 Boshlang'ich to'lov:
@@ -69,21 +83,25 @@ Boshlang'ich to'lov:
 
 https://t.me/real_auto_uz"""
 
-        update.message.reply_text("✅ Ma'lumotlar olindi. Tayyor shablon:\n\n" + post)
+        update.message.reply_text(
+            "✅ Ma'lumotlar olindi. Tayyor shablon:\n\n" + post
+        )
         return ConversationHandler.END
 
     except Exception as e:
-        logging.error(f"Xato: {e}")
-        update.message.reply_text("❌ Xatolik: Iltimos, faqat mavjud qator raqamini kiriting.")
+        logger.error(f"Xato choose_row: {e}")
+        update.message.reply_text(
+            "❌ Xatolik: Iltimos, faqat mavjud qator raqamini kiriting."
+        )
         return CHOOSING_ROW
 
-# ===== 7. Echo =====
+# ===== 10. Oddiy echo =====
 def echo(update: Update, context: CallbackContext):
     update.message.reply_text("Siz yubordingiz: " + update.message.text)
 
-# ===== 8. Main funktsiya =====
+# ===== 11. Main funksiyasi =====
 def main():
-    updater = Updater(TOKEN, use_context=True)
+    updater = Updater(token=TOKEN, use_context=True)
     dp = updater.dispatcher
 
     conv_handler = ConversationHandler(
@@ -96,8 +114,8 @@ def main():
     dp.add_handler(conv_handler)
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
-    updater.start_polling()
-    print("✅ BOT ISHLAYAPTI")
+    updater.start_polling(clean=True)
+    logger.info("✅ BOT ISHLAYAPTI")
     updater.idle()
 
 if __name__ == '__main__':
