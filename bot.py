@@ -4,9 +4,8 @@ import logging
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-
 # ===== 1. Telegram bot token =====
-TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # <<< BU YERGA TOKEN QO‘YILADI
+TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # TOKEN ni bu yerga to‘liq joylang
 
 # ===== 2. Google Sheets API ulanish =====
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -39,11 +38,12 @@ def choose_row(update: Update, context: CallbackContext):
         row_number = int(update.message.text)
         row_data = sheet.row_values(row_number)
 
-        model = row_data[1]
-        year = row_data[2]
-        kraska = row_data[3]
-        probeg = row_data[4]
-        narx = row_data[5]
+        # Ma’lumotlarni to‘g‘ri formatlash
+        model = row_data[1] if len(row_data) > 1 else "NOMA’LUM"
+        year = row_data[2] if len(row_data) > 2 else "NOMA’LUM"
+        kraska = row_data[3] if len(row_data) > 3 else "NOMA’LUM"
+        probeg = row_data[4] if len(row_data) > 4 else "NOMA’LUM"
+        narx = row_data[5] if len(row_data) > 5 else "NOMA’LUM"
 
         post = f"""🚗 #{model}
 📆 {year} yil
@@ -63,7 +63,8 @@ https://t.me/real_auto_uz"""
         return ConversationHandler.END
 
     except Exception as e:
-        update.message.reply_text("❌ Xatolik: Iltimos, to‘g‘ri qator raqamini yuboring.")
+        logging.error(f"Xato: {e}")
+        update.message.reply_text("❌ Xatolik: Iltimos, faqat mavjud qator raqamini kiriting.")
         return CHOOSING_ROW
 
 # ===== 7. Echo =====
