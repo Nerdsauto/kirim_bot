@@ -7,7 +7,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # ===== 1. Telegram bot token (shu yerga to'g'ridan yozing) =====
-TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"
+TOKEN = "8183691124:AAH-YtPHqPU9OQ_TrkssXY6EuA4zwUFLq3I"
 
 # ===== 2. Webhook o'chirish (faqat polling ishlashi uchun) =====
 bot = Bot(token=TOKEN)
