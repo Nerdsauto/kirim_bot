@@ -54,24 +54,21 @@ def post_yasash(update: Update, context: CallbackContext):
     return ASK_CAR_NUMBER
 
 def ask_car_number(update: Update, context: CallbackContext):
-    car_number = update.message.text.strip().upper()
+    car_number = update.message.text.strip().replace(" ", "").upper()
     rows = sheet.get_all_values()
-    headers = rows[0]
+    # D ustun = index 3, E ustun = index 4 (Excel'da A=0, B=1, C=2, D=3, E=4)
+    idx_number = 3   # D ustun
+    idx_year = 4     # E ustun
+    idx_model = 1    # B ustun (model)
+    idx_kraska = 5   # F ustun
+    idx_probeg = 6   # G ustun
+    idx_narx = 7     # H ustun
 
-    try:
-        idx_number = headers.index("Raqami")
-        idx_model = headers.index("Model")
-        idx_year = headers.index("Yili")
-        idx_kraska = headers.index("Kraska")
-        idx_probeg = headers.index("Probeg")
-        idx_narx = headers.index("Narx")
-    except ValueError:
-        update.message.reply_text("❌ Sheetda ustun nomlari topilmadi. Admin bilan bog'laning.")
-        return ConversationHandler.END
-
+    # Faqat ma'lumotli qatorlarni ko‘ramiz (headerdan keyingi)
     matches = [
         row for row in rows[1:]
-        if len(row) > idx_number and row[idx_number].replace(" ", "").upper() == car_number.replace(" ", "")
+        if len(row) > idx_number
+        and row[idx_number].replace(" ", "").upper() == car_number
     ]
     if not matches:
         update.message.reply_text("❌ Bunday avto raqami topilmadi. Qaytadan kiriting:")
@@ -90,12 +87,13 @@ def ask_car_number(update: Update, context: CallbackContext):
         update.message.reply_text("📸 Mashina rasmlarini yuboring. Tayyor bo‘lsa, 'Finish' deb yozing.")
         return GET_IMAGES
     else:
+        # Bir nechta moslik bo'lsa, yillar ro'yxatini chiqaradi va so'raydi
         years = []
         for row in matches:
             if len(row) > idx_year and row[idx_year] not in years:
                 years.append(row[idx_year])
         context.user_data['car_number_matches'] = matches
-        context.user_data['car_number_indexes'] = {
+        context.user_data['car_indexes'] = {
             'number': idx_number,
             'model': idx_model,
             'year': idx_year,
@@ -112,7 +110,7 @@ def ask_car_number(update: Update, context: CallbackContext):
 def ask_car_year(update: Update, context: CallbackContext):
     car_year = update.message.text.strip()
     matches = context.user_data.get('car_number_matches', [])
-    idx = context.user_data['car_number_indexes']
+    idx = context.user_data['car_indexes']
     selected = None
     for row in matches:
         if len(row) > idx['year'] and row[idx['year']] == car_year:
