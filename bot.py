@@ -5,12 +5,6 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 
-# 🔐 Google Sheets API uchun scope
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-
-# 🔑 creds.json fayldan kirish
-creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
-
 # ===== 1. Telegram bot token =====
 TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # <<< BU YERGA TOKEN QO‘YILADI
 
