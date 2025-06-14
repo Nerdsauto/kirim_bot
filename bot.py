@@ -174,7 +174,7 @@ def get_5(update: Update, context: CallbackContext):
         f"<b>🏎 {c['probeg']}km</b>\n"
         f"<b>💰 {c['narx']}$</b>\n"
         f"\n"
-        f"<b>&gt; Kapital bank</b>\n"
+        f"<b>🏦 Kapital bank</b>\n"
         f"\n"
         f"<b>Boshlang‘ich : {initial} $</b>\n"
         f"<b>3 yil: {pay3} $</b>\n"
