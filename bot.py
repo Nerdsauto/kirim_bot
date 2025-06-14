@@ -4,7 +4,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 import logging
 
 # TOKEN faqat Environment Variables orqali olinadi
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U")
 
 # Logging sozlamasi
 logging.basicConfig(
