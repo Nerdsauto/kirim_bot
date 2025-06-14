@@ -1,6 +1,9 @@
 from telegram import Update, Bot, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
-import logging, os, json\import gspread
+import logging
+import os
+import json
+import gspread
 from google.oauth2.service_account import Credentials
 
 # ===== 1. Telegram bot token =====
@@ -10,31 +13,27 @@ TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # BU YERGA TOKEN JOYLA
 bot = Bot(token=TOKEN)
 bot.delete_webhook(drop_pending_updates=True)
 
-# ===== 3. Setup Google Sheets credentials from env =====
-creds_json = os.environ.get('GOOGLE_CREDENTIALS')
+# ===== 3. Setup Google Sheets credentials from env =====ncreds_json = os.environ.get('GOOGLE_CREDENTIALS')
 if not creds_json:
     logging.error("❌ GOOGLE_CREDENTIALS env var topilmadi!")
     exit(1)
 creds_info = json.loads(creds_json)
-SCOPES = [
+
+# ===== 4. Scopes va credential =====nSCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
 
-# ===== 4. gspread bilan avtorizatsiya =====
-client = gspread.authorize(creds)
+# ===== 5. gspread bilan avtorizatsiya =====nclient = gspread.authorize(creds)
 sheet = client.open_by_key("12H87uDfhvYDyfuCMEHZJ4WDdcIvHpjn1xp2luvrbLaM").worksheet("realauto")
 
-# ===== 5. Logging sozlamasi =====
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+# ===== 6. Logging sozlamasi =====nlogging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ===== 6. Conversation holatlari =====
-CHOOSING_ROW = 1
+# ===== 7. Conversation holatlari =====nCHOOSING_ROW = 1
 
-# ===== 7. /start komandasi =====
-def start(update: Update, context: CallbackContext):
+# ===== 8. /start komandasi =====ndef start(update: Update, context: CallbackContext):
     keyboard = [["Post yasash"]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     update.message.reply_text(
@@ -42,15 +41,13 @@ def start(update: Update, context: CallbackContext):
         reply_markup=reply_markup
     )
 
-# ===== 8. Post yasash menyusi =====
-def post_yasash(update: Update, context: CallbackContext):
+# ===== 9. Post yasash menyusi =====ndef post_yasash(update: Update, context: CallbackContext):
     update.message.reply_text(
         "📌 Qaysi qatordagi mashinadan post tayyorlaymiz? Raqamni kiriting (masalan: 4)"
     )
     return CHOOSING_ROW
 
-# ===== 9. Qator raqamiga qarab post yasash =====
-def choose_row(update: Update, context: CallbackContext):
+# ===== 10. Qator raqamiga qarab post yasash =====ndef choose_row(update: Update, context: CallbackContext):
     try:
         row_number = int(update.message.text)
         row_data = sheet.row_values(row_number)
@@ -59,7 +56,6 @@ def choose_row(update: Update, context: CallbackContext):
         kraska = row_data[3] if len(row_data) > 3 else "NOMA’LUM"
         probeg = row_data[4] if len(row_data) > 4 else "NOMA’LUM"
         narx   = row_data[5] if len(row_data) > 5 else "NOMA’LUM"
-
         post = f"""🚗 #{model}
 📆 {year} yil
 💎 {kraska}
@@ -84,12 +80,10 @@ https://t.me/real_auto_uz"""
         )
         return CHOOSING_ROW
 
-# ===== 10. Echo =====
-def echo(update: Update, context: CallbackContext):
+# ===== 11. Echo =====ndef echo(update: Update, context: CallbackContext):
     update.message.reply_text("Echo: " + update.message.text)
 
-# ===== 11. Main funksiyasi =====
-def main():
+# ===== 12. Main funksiyasi =====ndef main():
     updater = Updater(bot=bot, use_context=True)
     dp = updater.dispatcher
 
