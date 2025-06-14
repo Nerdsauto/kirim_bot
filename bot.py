@@ -56,32 +56,53 @@ def post_yasash(update: Update, context: CallbackContext):
 def ask_car_number(update: Update, context: CallbackContext):
     car_number = update.message.text.strip().upper()
     rows = sheet.get_all_values()
-    # Shu raqamga mos barcha qatorlarni yig'ing
-    matches = [row for row in rows if len(row) > 0 and row[0].replace(" ", "").upper() == car_number.replace(" ", "")]
+    headers = rows[0]
+
+    try:
+        idx_number = headers.index("Raqami")
+        idx_model = headers.index("Model")
+        idx_year = headers.index("Yili")
+        idx_kraska = headers.index("Kraska")
+        idx_probeg = headers.index("Probeg")
+        idx_narx = headers.index("Narx")
+    except ValueError:
+        update.message.reply_text("❌ Sheetda ustun nomlari topilmadi. Admin bilan bog'laning.")
+        return ConversationHandler.END
+
+    matches = [
+        row for row in rows[1:]
+        if len(row) > idx_number and row[idx_number].replace(" ", "").upper() == car_number.replace(" ", "")
+    ]
     if not matches:
         update.message.reply_text("❌ Bunday avto raqami topilmadi. Qaytadan kiriting:")
         return ASK_CAR_NUMBER
     if len(matches) == 1:
-        # Faqat 1 ta moslik bo'lsa, to'g'ridan-to'g'ri davom etadi
         selected = matches[0]
         context.user_data['car'] = {
-            'number': selected[0] if len(selected) > 0 else 'NOMA’LUM',
-            'model': selected[1] if len(selected) > 1 else 'NOMA’LUM',
-            'year': selected[2] if len(selected) > 2 else 'NOMA’LUM',
-            'kraska': selected[3] if len(selected) > 3 else 'NOMA’LUM',
-            'probeg': selected[4] if len(selected) > 4 else 'NOMA’LUM',
-            'narx': selected[5] if len(selected) > 5 else 'NOMA’LUM'
+            'number': selected[idx_number] if len(selected) > idx_number else 'NOMA’LUM',
+            'model': selected[idx_model] if len(selected) > idx_model else 'NOMA’LUM',
+            'year': selected[idx_year] if len(selected) > idx_year else 'NOMA’LUM',
+            'kraska': selected[idx_kraska] if len(selected) > idx_kraska else 'NOMA’LUM',
+            'probeg': selected[idx_probeg] if len(selected) > idx_probeg else 'NOMA’LUM',
+            'narx': selected[idx_narx] if len(selected) > idx_narx else 'NOMA’LUM'
         }
         context.user_data['photos'] = []
         update.message.reply_text("📸 Mashina rasmlarini yuboring. Tayyor bo‘lsa, 'Finish' deb yozing.")
         return GET_IMAGES
     else:
-        # Bir nechta moslik bo'lsa, yillar ro'yxatini chiqaradi va so'raydi
         years = []
         for row in matches:
-            if len(row) > 2 and row[2] not in years:
-                years.append(row[2])
+            if len(row) > idx_year and row[idx_year] not in years:
+                years.append(row[idx_year])
         context.user_data['car_number_matches'] = matches
+        context.user_data['car_number_indexes'] = {
+            'number': idx_number,
+            'model': idx_model,
+            'year': idx_year,
+            'kraska': idx_kraska,
+            'probeg': idx_probeg,
+            'narx': idx_narx
+        }
         update.message.reply_text(
             "🔎 Bir nechta shu raqamli mashina topildi. Iltimos, avtomobil yilini kiriting. "
             f"Mavjud yillar: {', '.join(years)}"
@@ -91,21 +112,22 @@ def ask_car_number(update: Update, context: CallbackContext):
 def ask_car_year(update: Update, context: CallbackContext):
     car_year = update.message.text.strip()
     matches = context.user_data.get('car_number_matches', [])
+    idx = context.user_data['car_number_indexes']
     selected = None
     for row in matches:
-        if len(row) > 2 and row[2] == car_year:
+        if len(row) > idx['year'] and row[idx['year']] == car_year:
             selected = row
             break
     if not selected:
         update.message.reply_text("❌ Bunday yil topilmadi. Qaytadan yilni kiriting:")
         return ASK_CAR_YEAR
     context.user_data['car'] = {
-        'number': selected[0] if len(selected) > 0 else 'NOMA’LUM',
-        'model': selected[1] if len(selected) > 1 else 'NOMA’LUM',
-        'year': selected[2] if len(selected) > 2 else 'NOMA’LUM',
-        'kraska': selected[3] if len(selected) > 3 else 'NOMA’LUM',
-        'probeg': selected[4] if len(selected) > 4 else 'NOMA’LUM',
-        'narx': selected[5] if len(selected) > 5 else 'NOMA’LUM'
+        'number': selected[idx['number']] if len(selected) > idx['number'] else 'NOMA’LUM',
+        'model': selected[idx['model']] if len(selected) > idx['model'] else 'NOMA’LUM',
+        'year': selected[idx['year']] if len(selected) > idx['year'] else 'NOMA’LUM',
+        'kraska': selected[idx['kraska']] if len(selected) > idx['kraska'] else 'NOMA’LUM',
+        'probeg': selected[idx['probeg']] if len(selected) > idx['probeg'] else 'NOMA’LUM',
+        'narx': selected[idx['narx']] if len(selected) > idx['narx'] else 'NOMA’LUM'
     }
     context.user_data['photos'] = []
     update.message.reply_text("📸 Mashina rasmlarini yuboring. Tayyor bo‘lsa, 'Finish' deb yozing.")
