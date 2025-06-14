@@ -7,7 +7,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # ===== 1. Telegram bot token =====
-TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # BU YERGA TOKEN JOYLANG
+TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # <-- BU YERGA O'Z TOKENINGIZNI QO'YING
 
 # ===== 2. Delete existing webhook to prevent polling conflict =====
 bot = Bot(token=TOKEN)
@@ -31,9 +31,9 @@ sheet = client.open_by_key("12H87uDfhvYDyfuCMEHZJ4WDdcIvHpjn1xp2luvrbLaM").works
 # ===== 6. Logging sozlamasi =====nlogging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ===== 7. Conversation holatlari =====nCHOOSING_ROW = 1
+# ===== 7. Conversation state =====nCHOOSING_ROW = 1
 
-# ===== 8. /start komandasi =====ndef start(update: Update, context: CallbackContext):
+# ===== 8. /start command =====ndef start(update: Update, context: CallbackContext):
     keyboard = [["Post yasash"]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     update.message.reply_text(
@@ -41,13 +41,13 @@ logger = logging.getLogger(__name__)
         reply_markup=reply_markup
     )
 
-# ===== 9. Post yasash menyusi =====ndef post_yasash(update: Update, context: CallbackContext):
+# ===== 9. Post yasash menu =====ndef post_yasash(update: Update, context: CallbackContext):
     update.message.reply_text(
         "📌 Qaysi qatordagi mashinadan post tayyorlaymiz? Raqamni kiriting (masalan: 4)"
     )
     return CHOOSING_ROW
 
-# ===== 10. Qator raqamiga qarab post yasash =====ndef choose_row(update: Update, context: CallbackContext):
+# ===== 10. Choose row and create post =====ndef choose_row(update: Update, context: CallbackContext):
     try:
         row_number = int(update.message.text)
         row_data = sheet.row_values(row_number)
@@ -83,7 +83,7 @@ https://t.me/real_auto_uz"""
 # ===== 11. Echo =====ndef echo(update: Update, context: CallbackContext):
     update.message.reply_text("Echo: " + update.message.text)
 
-# ===== 12. Main funksiyasi =====ndef main():
+# ===== 12. Main function =====ndef main():
     updater = Updater(bot=bot, use_context=True)
     dp = updater.dispatcher
 
