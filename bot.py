@@ -13,31 +13,36 @@ TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"
 bot = Bot(token=TOKEN)
 bot.delete_webhook(drop_pending_updates=True)
 
-# ===== 3. Google Sheets API credential =====n# "GOOGLE_CREDENTIALS" env-o'zgaruvchisiga butun JSON joylang
-ing = os.environ.get("GOOGLE_CREDENTIALS")
+# ===== 3. Google Sheets API credential =====
+creds_json = os.environ.get("GOOGLE_CREDENTIALS")
 if not creds_json:
     logging.error("❌ GOOGLE_CREDENTIALS environment variable topilmadi!")
     exit(1)
 creds_info = json.loads(creds_json)
 
-# ===== 4. Scopes va credential yaratish =====nSCOPES = [
+# ===== 4. Scopes va credential yaratish =====
+SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
 creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
 
-# ===== 5. gspread bilan avtorizatsiya =====nclient = gspread.authorize(creds)
+# ===== 5. gspread bilan avtorizatsiya =====
+client = gspread.authorize(creds)
 sheet = client.open_by_key("12H87uDfhvYDyfuCMEHZJ4WDdcIvHpjn1xp2luvrbLaM").worksheet("realauto")
 
-# ===== 6. Logging sozlamasi =====nlogging.basicConfig(
+# ===== 6. Logging sozlamasi =====
+logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# ===== 7. Conversation holatlari =====nCHOOSING_ROW = 1
+# ===== 7. Conversation holatlari =====
+CHOOSING_ROW = 1
 
-# ===== 8. /start komandasi =====ndef start(update: Update, context: CallbackContext):
+# ===== 8. /start komandasi =====
+def start(update: Update, context: CallbackContext):
     keyboard = [["Post yasash"]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     update.message.reply_text(
@@ -45,13 +50,15 @@ logger = logging.getLogger(__name__)
         reply_markup=reply_markup
     )
 
-# ===== 9. Post yasash menyusi =====ndef post_yasash(update: Update, context: CallbackContext):
+# ===== 9. Post yasash menyusi =====
+def post_yasash(update: Update, context: CallbackContext):
     update.message.reply_text(
         "📌 Qaysi qatordagi mashinadan post tayyorlaymiz? Raqamni kiriting (masalan: 4)"
     )
     return CHOOSING_ROW
 
-# ===== 10. Qator raqamiga qarab post yasash =====ndef choose_row(update: Update, context: CallbackContext):
+# ===== 10. Qator raqamiga qarab post yasash =====
+def choose_row(update: Update, context: CallbackContext):
     try:
         row_number = int(update.message.text)
         row_data = sheet.row_values(row_number)
@@ -87,17 +94,19 @@ https://t.me/real_auto_uz"""
         )
         return CHOOSING_ROW
 
-# ===== 11. Echo =====ndef echo(update: Update, context: CallbackContext):
+# ===== 11. Echo =====
+def echo(update: Update, context: CallbackContext):
     update.message.reply_text("Echo: " + update.message.text)
 
-# ===== 12. Main funksiyasi =====ndef main():
-    updater = Updater(bot=bot, use_context=True)
+# ===== 12. Main funksiyasi =====
+def main():
+    updater = Updater(token=TOKEN, use_context=True)
     dp = updater.dispatcher
 
     conv = ConversationHandler(
         entry_points=[MessageHandler(Filters.regex('^(Post yasash)$'), post_yasash)],
         states={CHOOSING_ROW: [MessageHandler(Filters.text & ~Filters.command, choose_row)]},
-        fallbacks=[]
+        fallbacks=[CommandHandler("start", start)]
     )
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(conv)
