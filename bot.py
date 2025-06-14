@@ -63,8 +63,8 @@ def ask_car_number(update: Update, context: CallbackContext):
     idx_number = 3   # D ustun
     idx_year = 4     # E ustun
     idx_model = 1    # B ustun (model)
-    idx_kraska = 5   # F ustun
-    idx_probeg = 6   # G ustun
+    idx_kraska = 6   # F ustun
+    idx_probeg = 5   # G ustun
     idx_narx = 7     # H ustun
 
     # Faqat ma'lumotli qatorlarni ko‘ramiz (headerdan keyingi)
@@ -147,17 +147,17 @@ def get_images(update: Update, context: CallbackContext):
 
 def get_initial(update: Update, context: CallbackContext):
     context.user_data['initial'] = update.message.text
-    update.message.reply_text("💰 3 yillik oylik to‘lovni kiriting ($):")
+    update.message.reply_text("💰 3 yillik oylik to‘lovni kiriting (so'm):")
     return GET_3
 
 def get_3(update: Update, context: CallbackContext):
     context.user_data['pay3'] = update.message.text
-    update.message.reply_text("💰 4 yillik oylik to‘lovni kiriting ($):")
+    update.message.reply_text("💰 4 yillik oylik to‘lovni kiriting (so'm):")
     return GET_4
 
 def get_4(update: Update, context: CallbackContext):
     context.user_data['pay4'] = update.message.text
-    update.message.reply_text("💰 5 yillik oylik to‘lovni kiriting ($):")
+    update.message.reply_text("💰 5 yillik oylik to‘lovni kiriting (so'm):")
     return GET_5
 
 def get_5(update: Update, context: CallbackContext):
@@ -173,17 +173,20 @@ def get_5(update: Update, context: CallbackContext):
     post = (
         f"🚗 #{c['model']}\n"
         f"📆 {c['year']} yil\n"
-        f"🔹 {c['probeg']}\n"
         f"💎 {c['kraska']}\n"
+        f"🏎 {c['probeg']}km\n"
         f"💰 {c['narx']}$\n"
         f"\n"
         f"> Kapital bank\n"
         f"\n"
-        f"Boshlang‘ich to‘lov: {initial} $\n"
-        f"3 yil: {pay3} $\n"
-        f"4 yil: {pay4} $\n"
-        f"5 yil: {pay5} $\n"
+        f"Boshlang‘ich : {initial} $\n"
+        f"3 yil: {pay3} so'm\n"
+        f"4 yil: {pay4} so'm\n"
+        f"5 yil: {pay5} so'm\n"
         f"\n"
+        f"\n"
+        f"+998333152222"
+        f'\n"
         f"https://t.me/real_auto_uz"
     )
 
