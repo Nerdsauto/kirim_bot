@@ -6,34 +6,38 @@ import json
 import gspread
 from google.oauth2.service_account import Credentials
 
-# ===== 1. Telegram bot token =====
-TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # <-- BU YERGA O'Z TOKENINGIZNI QO'YING
+# ===== 1. Telegram bot token (shu yerga to'g'ridan yozing) =====
+TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"
 
-# ===== 2. Delete existing webhook to prevent polling conflict =====
+# ===== 2. Webhook o'chirish (faqat polling ishlashi uchun) =====
 bot = Bot(token=TOKEN)
 bot.delete_webhook(drop_pending_updates=True)
 
-# ===== 3. Setup Google Sheets credentials from env =====ncreds_json = os.environ.get('GOOGLE_CREDENTIALS')
+# ===== 3. Google Sheets API credential =====n# "GOOGLE_CREDENTIALS" env-o'zgaruvchisiga butun JSON joylang
+ing = os.environ.get("GOOGLE_CREDENTIALS")
 if not creds_json:
-    logging.error("❌ GOOGLE_CREDENTIALS env var topilmadi!")
+    logging.error("❌ GOOGLE_CREDENTIALS environment variable topilmadi!")
     exit(1)
 creds_info = json.loads(creds_json)
 
-# ===== 4. Scopes va credential =====nSCOPES = [
+# ===== 4. Scopes va credential yaratish =====nSCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
+    "https://www.googleapis.com/auth/drive",
 ]
 creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
 
 # ===== 5. gspread bilan avtorizatsiya =====nclient = gspread.authorize(creds)
 sheet = client.open_by_key("12H87uDfhvYDyfuCMEHZJ4WDdcIvHpjn1xp2luvrbLaM").worksheet("realauto")
 
-# ===== 6. Logging sozlamasi =====nlogging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+# ===== 6. Logging sozlamasi =====nlogging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
-# ===== 7. Conversation state =====nCHOOSING_ROW = 1
+# ===== 7. Conversation holatlari =====nCHOOSING_ROW = 1
 
-# ===== 8. /start command =====ndef start(update: Update, context: CallbackContext):
+# ===== 8. /start komandasi =====ndef start(update: Update, context: CallbackContext):
     keyboard = [["Post yasash"]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     update.message.reply_text(
@@ -41,21 +45,23 @@ logger = logging.getLogger(__name__)
         reply_markup=reply_markup
     )
 
-# ===== 9. Post yasash menu =====ndef post_yasash(update: Update, context: CallbackContext):
+# ===== 9. Post yasash menyusi =====ndef post_yasash(update: Update, context: CallbackContext):
     update.message.reply_text(
         "📌 Qaysi qatordagi mashinadan post tayyorlaymiz? Raqamni kiriting (masalan: 4)"
     )
     return CHOOSING_ROW
 
-# ===== 10. Choose row and create post =====ndef choose_row(update: Update, context: CallbackContext):
+# ===== 10. Qator raqamiga qarab post yasash =====ndef choose_row(update: Update, context: CallbackContext):
     try:
         row_number = int(update.message.text)
         row_data = sheet.row_values(row_number)
-        model  = row_data[1] if len(row_data) > 1 else "NOMA’LUM"
-        year   = row_data[2] if len(row_data) > 2 else "NOMA’LUM"
+
+        model = row_data[1] if len(row_data) > 1 else "NOMA’LUM"
+        year = row_data[2] if len(row_data) > 2 else "NOMA’LUM"
         kraska = row_data[3] if len(row_data) > 3 else "NOMA’LUM"
         probeg = row_data[4] if len(row_data) > 4 else "NOMA’LUM"
-        narx   = row_data[5] if len(row_data) > 5 else "NOMA’LUM"
+        narx = row_data[5] if len(row_data) > 5 else "NOMA’LUM"
+
         post = f"""🚗 #{model}
 📆 {year} yil
 💎 {kraska}
@@ -69,6 +75,7 @@ Boshlang'ich to'lov:
 5 yil: ...
 
 https://t.me/real_auto_uz"""
+
         update.message.reply_text(
             "✅ Tayyor shablon:\n\n" + post
         )
@@ -83,7 +90,7 @@ https://t.me/real_auto_uz"""
 # ===== 11. Echo =====ndef echo(update: Update, context: CallbackContext):
     update.message.reply_text("Echo: " + update.message.text)
 
-# ===== 12. Main function =====ndef main():
+# ===== 12. Main funksiyasi =====ndef main():
     updater = Updater(bot=bot, use_context=True)
     dp = updater.dispatcher
 
