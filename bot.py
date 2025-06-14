@@ -1,17 +1,27 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
 import logging
+import os, json
 import gspread
-from google.oauth2.service_account  import Credentials
+from google.oauth2.service_account import Credentials
+
+# 1. JSON’ni Environment Variable’dan o‘qing
+creds_json = os.environ['GOOGLE_CREDENTIALS']
+creds_info = json.loads(creds_json)
+
+# 2. Scopes ni aniqlang
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/drive"]
+
+# 3. service_account_info orqali credential oling
+creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
+
+# 4. gspread bilan avtorizatsiya
+client = gspread.authorize(creds)
+sheet = client.open_by_key("12H87uDfhvYDyfuCMEHZJ4WDdcIvHpjn1xp2luvrbLaM").worksheet("realauto")
 
 # ===== 1. Telegram bot token =====
 TOKEN = "8183691124:AAEtvKgvuAQwuXdoyJV6x9dJDcwZC6qtJ0U"  # TOKEN ni bu yerga to‘liq joylang
-
-# ===== 2. Google Sheets API ulanish =====
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
-client = gspread.authorize(creds)
-sheet = client.open_by_key("12H87uDfhvYDyfuCMEHZJ4WDdcIvHpjn1xp2luvrbLaM").worksheet("realauto")
 
 # ===== 3. Logging =====
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
