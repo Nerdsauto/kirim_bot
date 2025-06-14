@@ -177,11 +177,13 @@ def get_5(update: Update, context: CallbackContext):
         f"<b>🏦 Kapital bank</b>\n"
         f"\n"
         f"<b>Boshlang‘ich : {initial} $</b>\n"
+        f"\n"
         f"<b>3 yil: {pay3} $</b>\n"
         f"<b>4 yil: {pay4} $</b>\n"
         f"<b>5 yil: {pay5} $</b>\n"
         f"\n"
         f"<b>+998333152222</b>\n"
+        f"\n"
         f"<b>https://t.me/real_auto_uz</b>"
     )
 
