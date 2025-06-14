@@ -63,11 +63,10 @@ def ask_car_number(update: Update, context: CallbackContext):
     idx_number = 3   # D ustun
     idx_year = 4     # E ustun
     idx_model = 1    # B ustun (model)
-    idx_kraska = 6   # F ustun
-    idx_probeg = 5   # G ustun
+    idx_kraska = 6   # G ustun
+    idx_probeg = 5   # F ustun
     idx_narx = 7     # H ustun
 
-    # Faqat ma'lumotli qatorlarni ko‘ramiz (headerdan keyingi)
     matches = [
         row for row in rows[1:]
         if len(row) > idx_number
@@ -90,7 +89,6 @@ def ask_car_number(update: Update, context: CallbackContext):
         update.message.reply_text("📸 Mashina rasmlarini yuboring. Tayyor bo‘lsa, 'Finish' deb yozing.")
         return GET_IMAGES
     else:
-        # Bir nechta moslik bo'lsa, yillar ro'yxatini chiqaradi va so'raydi
         years = []
         for row in matches:
             if len(row) > idx_year and row[idx_year] not in years:
@@ -147,58 +145,56 @@ def get_images(update: Update, context: CallbackContext):
 
 def get_initial(update: Update, context: CallbackContext):
     context.user_data['initial'] = update.message.text
-    update.message.reply_text("💰 3 yillik oylik to‘lovni kiriting (so'm):")
+    update.message.reply_text("💰 3 yillik oylik to‘lovni kiriting ($):")
     return GET_3
 
 def get_3(update: Update, context: CallbackContext):
     context.user_data['pay3'] = update.message.text
-    update.message.reply_text("💰 4 yillik oylik to‘lovni kiriting (so'm):")
+    update.message.reply_text("💰 4 yillik oylik to‘lovni kiriting ($):")
     return GET_4
 
 def get_4(update: Update, context: CallbackContext):
     context.user_data['pay4'] = update.message.text
-    update.message.reply_text("💰 5 yillik oylik to‘lovni kiriting (so'm):")
+    update.message.reply_text("💰 5 yillik oylik to‘lovni kiriting ($):")
     return GET_5
 
 def get_5(update: Update, context: CallbackContext):
     context.user_data['pay5'] = update.message.text
     c = context.user_data['car']
     photos = context.user_data['photos']
-    # Format raqamlar
     initial = format_summa(context.user_data['initial'])  # boshlang‘ich uchun bo‘sh joy, oxirida $ bo‘ladi
     pay3 = format_summa(context.user_data['pay3'], point_format=True)
     pay4 = format_summa(context.user_data['pay4'], point_format=True)
     pay5 = format_summa(context.user_data['pay5'], point_format=True)
 
     post = (
-        f"🚗 #{c['model']}\n"
-        f"📆 {c['year']} yil\n"
-        f"💎 {c['kraska']}\n"
-        f"🏎 {c['probeg']}km\n"
-        f"💰 {c['narx']}$\n"
+        f"<b>🚗 #{c['model']}</b>\n"
+        f"<b>📆 {c['year']} yil</b>\n"
+        f"<b>💎 {c['kraska']}</b>\n"
+        f"<b>🏎 {c['probeg']}km</b>\n"
+        f"<b>💰 {c['narx']}$</b>\n"
         f"\n"
-        f"> Kapital bank\n"
+        f"<b>&gt; Kapital bank</b>\n"
         f"\n"
-        f"Boshlang‘ich : {initial} $\n"
-        f"3 yil: {pay3} so'm\n"
-        f"4 yil: {pay4} so'm\n"
-        f"5 yil: {pay5} so'm\n"
+        f"<b>Boshlang‘ich : {initial} $</b>\n"
+        f"<b>3 yil: {pay3} $</b>\n"
+        f"<b>4 yil: {pay4} $</b>\n"
+        f"<b>5 yil: {pay5} $</b>\n"
         f"\n"
-        f"\n"
-        f"+998333152222"
-        f'\n"
-        f"https://t.me/real_auto_uz"
+        f"<b>+998333152222</b>\n"
+        f"<b>https://t.me/real_auto_uz</b>"
     )
 
     # Avval media, keyin text
     if len(photos) == 1:
-        update.message.reply_photo(photos[0], caption=post)
+        update.message.reply_photo(photos[0], caption=post, parse_mode='HTML')
     elif len(photos) > 1:
         media = [InputMediaPhoto(fid) for fid in photos]
         media[0].caption = post
+        media[0].parse_mode = 'HTML'
         update.message.reply_media_group(media)
     else:
-        update.message.reply_text(post)
+        update.message.reply_text(post, parse_mode='HTML')
     return ConversationHandler.END
 
 def echo(update: Update, context: CallbackContext):
